@@ -1,44 +1,39 @@
 """
-Módulo de excepciones personalizadas para el sistema de Software FJ.
-Permite identificar y clasificar errores de negocio y validación.
+Módulo encargado de configurar el sistema de logging.
+Cumple la restricción de usar archivos exclusivamente para eventos y errores.
 """
 
-
-class ErrorSistemaFJ(Exception):
-    """Excepción base de la cual heredan todos los errores del sistema."""
-
-    def __init__(self, mensaje: str, codigo: str = "ERR-000"):
-        # Almacenamos un código de error para facilitar la trazabilidad en los logs
-        self.codigo = codigo
-        super().__init__(f"[{codigo}] {mensaje}")
+import logging
+import os
 
 
-class ErrorValidacionDatos(ErrorSistemaFJ):
-    """Se lanza cuando los datos ingresados tienen formato inválido o están vacíos."""
+def configurar_logger() -> logging.Logger:
+    """Configura y retorna el logger principal del sistema."""
+    # Aseguramos que exista el directorio 'logs' antes de crear el archivo
+    os.makedirs("logs", exist_ok=True)
 
-    def __init__(self, mensaje: str):
-        super().__init__(mensaje, codigo="ERR-VAL-01")
+    logger = logging.getLogger("SoftwareFJ")
+    logger.setLevel(logging.DEBUG)
 
+    # Evitamos duplicar handlers si la función se llama más de una vez
+    if not logger.handlers:
+        # Manejador para escribir en el archivo logs/sistema_fj.log con codificación UTF-8
+        file_handler = logging.FileHandler("logs/sistema_fj.log", mode="w", encoding="utf-8")
+        file_handler.setLevel(logging.DEBUG)
 
-class ErrorClienteDuplicado(ErrorSistemaFJ):
-    """Se lanza al intentar registrar un cliente con un documento ya existente."""
+        # Manejador para mostrar mensajes en consola durante la simulación
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
 
-    def __init__(self, documento: str):
-        super().__init__(
-            f"El cliente con documento '{documento}' ya se encuentra registrado.",
-            codigo="ERR-CLI-02",
+        # Formato detallado con fecha, nivel de severidad y mensaje
+        formato = logging.Formatter(
+            "%(asctime)s | %(levelname)-8s | %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
         )
+        file_handler.setFormatter(formato)
+        console_handler.setFormatter(formato)
 
+        logger.addHandler(file_handler)
+        logger.addHandler(console_handler)
 
-class ErrorServicioNoDisponible(ErrorSistemaFJ):
-    """Se lanza cuando un servicio no existe, está inactivo o no cumple capacidad."""
-
-    def __init__(self, mensaje: str):
-        super().__init__(mensaje, codigo="ERR-SRV-03")
-
-
-class ErrorReservaInvalida(ErrorSistemaFJ):
-    """Se lanza cuando una reserva viola reglas de negocio (duración, estado, etc.)."""
-
-    def __init__(self, mensaje: str):
-        super().__init__(mensaje, codigo="ERR-RES-04")
+    return logger
