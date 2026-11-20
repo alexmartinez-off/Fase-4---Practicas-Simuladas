@@ -40,3 +40,37 @@ class Reserva(EntidadSistema):
         self.horas = horas
         self.estado = "PENDIENTE"
         self.costo_total = 0.0
+
+
+def procesar_y_confirmar(self, descuento: float = 0.0):
+    """
+    Calcula el costo total invocando el polimorfismo del servicio
+    y confirma la reserva con manejo estricto de excepciones.
+    """
+    try:
+        if self.estado == "CANCELADA":
+            raise ReservaInvalidaError(
+                "No se puede confirmar una reserva previamente cancelada."
+            )
+
+        # Delegación polimórfica del cálculo de tarifa según el servicio asignado
+        self.costo_total = self.servicio.calcular_costo(self.horas, descuento=descuento)
+        self.estado = "CONFIRMADA"
+        registrar_log(
+            "INFO",
+            f"Reserva {self.id} CONFIRMADA para {self.cliente.nombre}. Total: ${self.costo_total}",
+        )
+
+    except ErrorSistemaFJ as error_origen:
+        # Encadenamiento de excepciones: captura el error original y relanza ReservaInvalidaError
+        self.estado = "FALLIDA"
+        registrar_log("ERROR", f"Error procesando reserva {self.id}: {error_origen}")
+        raise ReservaInvalidaError(
+            f"Fallo al procesar la reserva {self.id}"
+        ) from error_origen
+
+    finally:
+        # El bloque finally garantiza el registro de auditoría sin importar si hubo error o éxito
+        registrar_log(
+            "INFO", f"Auditoría Reserva {self.id} -> Estado actual final: {self.estado}"
+        )
