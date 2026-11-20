@@ -1,13 +1,21 @@
-# Importamos las clases y funciones base que ya creó nuestro compañero en base_y_logs.py
-from base_y_logs import EntidadSistema, ErrorValidacion, registrar_log
+# Importamos las clases y funciones base que ya creo nuestro companero en base_y_logs.py
+from base_y_logs import (
+    EntidadSistema,
+    ErrorClienteDuplicado,
+    ErrorSistemaFJ,
+    ErrorValidacion,
+    registrar_log,
+)
 
 
 class Cliente(EntidadSistema):
+    __documentos_registrados = set()
+
     # Clase para manejar los clientes de Software FJ heredando id y fecha de EntidadSistema
     def __init__(self, id, nombre, documento, correo):
         # Llamamos al constructor padre para validar el id y guardar la fecha de registro
         super().__init__(id)
-        # Guardamos los datos en atributos privados para protegerlos (encapsulación)
+        # Guardamos los datos en atributos privados para protegerlos (encapsulacion)
         self.__nombre = None
         self.__documento = None
         self.__correo = None
@@ -18,10 +26,14 @@ class Cliente(EntidadSistema):
             self.nombre = nombre
             self.documento = documento
             self.correo = correo
-        except ErrorValidacion as err:
-            # Si algo falla en la validación, lo dejamos anotado en el archivo de logs
+
+            if self.__documento in Cliente.__documentos_registrados:
+                raise ErrorClienteDuplicado(self.__documento)
+            Cliente.__documentos_registrados.add(self.__documento)
+        except ErrorSistemaFJ as err:
+            # Si algo falla en la validacion, lo dejamos anotado en el archivo de logs
             registrar_log(f"Fallo creando cliente ({id}): {err}", "ERROR")
-            # Volvemos a lanzar el error para que el programa principal decida cómo seguir
+            # Volvemos a lanzar el error para que el programa principal decida como seguir
             raise
         else:
             # Solo se ejecuta si nombre, documento y correo pasaron todas las reglas
@@ -34,11 +46,11 @@ class Cliente(EntidadSistema):
 
     @nombre.setter
     def nombre(self, valor):
-        # Validamos que el nombre exista, sea texto y no quede vacío tras quitar espacios
+        # Validamos que el nombre exista, sea texto y no quede vacio tras quitar espacios
         try:
             if not isinstance(valor, str) or not valor.strip():
-                # Lanzamos la excepción personalizada si el nombre no es válido
-                raise ErrorValidacion("El nombre no puede estar vacío.")
+                # Lanzamos la excepcion personalizada si el nombre no es valido
+                raise ErrorValidacion("El nombre no puede estar vacio.")
         except ErrorValidacion:
             # Propagamos el error hacia arriba
             raise
@@ -53,15 +65,15 @@ class Cliente(EntidadSistema):
 
     @documento.setter
     def documento(self, valor):
-        # Revisamos que el documento no venga vacío
+        # Revisamos que el documento no venga vacio
         try:
             if valor is None:
                 raise ErrorValidacion("El documento es obligatorio.")
             # Convertimos a texto y quitamos espacios sobrantes
             doc = str(valor).strip()
-            # Pedimos al menos 5 caracteres y que solo tenga letras o números
+            # Pedimos al menos 5 caracteres y que solo tenga letras o numeros
             if len(doc) < 5 or not doc.isalnum():
-                raise ErrorValidacion("El documento debe tener mínimo 5 caracteres alfanuméricos.")
+                raise ErrorValidacion("El documento debe tener minimo 5 caracteres alfanumericos.")
         except ErrorValidacion:
             raise
         else:
@@ -75,14 +87,14 @@ class Cliente(EntidadSistema):
 
     @correo.setter
     def correo(self, valor):
-        # Revisamos que el correo tenga un formato básico válido con '@' y punto
+        # Revisamos que el correo tenga un formato basico valido con '@' y punto
         try:
             if not isinstance(valor, str) or not valor.strip():
-                raise ErrorValidacion("El correo no puede estar vacío.")
+                raise ErrorValidacion("El correo no puede estar vacio.")
             correo_limpio = valor.strip()
-            # Verificamos que tenga '@' y un dominio con punto después del '@'
+            # Verificamos que tenga '@' y un dominio con punto despues del '@'
             if "@" not in correo_limpio or "." not in correo_limpio.split("@")[-1]:
-                raise ErrorValidacion("El correo debe tener un formato válido (ejemplo: usuario@correo.com).")
+                raise ErrorValidacion("El correo debe tener un formato valido (ejemplo: usuario@correo.com).")
         except ErrorValidacion:
             raise
         else:
@@ -90,7 +102,7 @@ class Cliente(EntidadSistema):
             self.__correo = correo_limpio
 
     def obtener_resumen(self):
-        # Implementamos el método abstracto de EntidadSistema para mostrar los datos del cliente
+        # Implementamos el metodo abstracto de EntidadSistema para mostrar los datos del cliente
         return (
             f"Cliente ID: {self.id} | Nombre: {self.__nombre} | "
             f"Documento: {self.__documento} | Correo: {self.__correo}"
