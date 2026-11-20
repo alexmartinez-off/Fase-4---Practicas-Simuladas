@@ -74,3 +74,19 @@ def procesar_y_confirmar(self, descuento: float = 0.0):
         registrar_log(
             "INFO", f"Auditoría Reserva {self.id} -> Estado actual final: {self.estado}"
         )
+
+    def cancelar(self):
+        """Cancela una reserva activa y actualiza su estado."""
+        if self.estado == "CANCELADA":
+            raise ReservaInvalidaError(
+                f"La reserva {self.id} ya se encuentra cancelada."
+            )
+        self.estado = "CANCELADA"
+        registrar_log("INFO", f"Reserva {self.id} CANCELADA por el usuario.")
+
+    def obtener_resumen(self) -> str:
+        """Implementación del método abstracto heredado de EntidadSistema."""
+        return (
+            f"Reserva [{self.id}] | Estado: {self.estado} | Cliente: {self.cliente.nombre} | "
+            f"Servicio: {self.servicio.obtener_resumen()} | Total: ${self.costo_total}"
+        )
