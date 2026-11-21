@@ -11,10 +11,10 @@ from datetime import datetime
 import logging
 import os
 
-
 # ==============================================================================
 # 1. EXCEPCIONES PERSONALIZADAS
 # ==============================================================================
+
 
 class ErrorSistemaFJ(Exception):
     """Excepcion base de la cual heredan todos los errores del sistema Software FJ."""
@@ -60,6 +60,7 @@ class ReservaInvalidaError(ErrorSistemaFJ):
 # 2. SISTEMA DE LOGS EN ARCHIVO (SIN BASES DE DATOS)
 # ==============================================================================
 
+
 def _configurar_logger() -> logging.Logger:
     """Configura el logger que escribe en el archivo 'registro_eventos.log'."""
     logger = logging.getLogger("SoftwareFJ")
@@ -100,12 +101,6 @@ def registrar_log(mensaje: str, nivel: str = "INFO") -> None:
     :param mensaje: Descripcion del evento o error ocurrido.
     :param nivel: Nivel de severidad ('INFO', 'ERROR', 'WARNING', 'DEBUG').
     """
-    # Permite llamadas historicas con formato (nivel, mensaje) y el formato
-    # establecido por el resto del proyecto (mensaje, nivel).
-    niveles_validos = {"INFO", "ERROR", "WARNING", "DEBUG"}
-    if str(mensaje).upper().strip() in niveles_validos and str(nivel).upper().strip() not in niveles_validos:
-        mensaje, nivel = nivel, mensaje
-
     nivel_normalizado = nivel.upper().strip()
     if nivel_normalizado == "ERROR":
         _logger_sistema.error(mensaje)
@@ -121,6 +116,7 @@ def registrar_log(mensaje: str, nivel: str = "INFO") -> None:
 # 3. CLASE ABSTRACTA GENERAL
 # ==============================================================================
 
+
 class EntidadSistema(ABC):
     """
     Clase abstracta general de la que heredan Cliente, Servicio y Reserva.
@@ -130,7 +126,9 @@ class EntidadSistema(ABC):
     def __init__(self, id_entidad: str):
         # Validamos que el ID no llegue vacio
         if not id_entidad or not str(id_entidad).strip():
-            raise ErrorValidacion("El identificador de la entidad no puede estar vacio.")
+            raise ErrorValidacion(
+                "El identificador de la entidad no puede estar vacio."
+            )
 
         # Atributos protegidos accesibles para las clases hijas
         self._id = str(id_entidad).strip()

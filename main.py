@@ -8,7 +8,7 @@ from reserva import Reserva
 def ejecutar_simulacion():
     """Ejecuta la simulacion integral y controla los errores esperados."""
     print("=== INICIANDO SISTEMA INTEGRAL SOFTWARE FJ ===\n")
-    registrar_log("INFO", "=== INICIO DE SIMULACION DEL SISTEMA ===")
+    registrar_log("=== INICIO DE SIMULACION DEL SISTEMA ===", "INFO")
 
     clientes = []
     servicios = []
@@ -46,9 +46,15 @@ def ejecutar_simulacion():
 
     # OPERACION 5: Creacion polimorfica de servicios
     try:
-        s1 = ReservaSala("SRV-01", "Sala Juntas Norte", 80000, capacidad=12, disponible=True)
-        s2 = AlquilerEquipo("SRV-02", "Servidor Dell PowerEdge", 50000, "Servidores", disponible=True)
-        s3 = AsesoriaEspecializada("SRV-03", "Arquitectura Cloud", 120000, "DevOps", disponible=False)
+        s1 = ReservaSala(
+            "SRV-01", "Sala Juntas Norte", 80000, capacidad=12, disponible=True
+        )
+        s2 = AlquilerEquipo(
+            "SRV-02", "Servidor Dell PowerEdge", 50000, "Servidores", disponible=True
+        )
+        s3 = AsesoriaEspecializada(
+            "SRV-03", "Arquitectura Cloud", 120000, "DevOps", disponible=False
+        )
         servicios.extend([s1, s2, s3])
         print("[OK] Op 5: 3 servicios creados correctamente.")
     except ErrorSistemaFJ as e:
@@ -84,14 +90,35 @@ def ejecutar_simulacion():
         r3 = Reserva("RES-03", clientes[0], servicios[2], horas=2)
         r3.procesar_y_confirmar()
     except ErrorSistemaFJ as e:
-        print(f"[ERROR CONTROLADO] Op 9 (Servicio inactivo): {e} | Causa raiz: {e.__cause__}")
+        print(
+            f"[ERROR CONTROLADO] Op 9 (Servicio inactivo): {e} | Causa raiz: {e.__cause__}"
+        )
 
     # OPERACION 10: Horas negativas
     try:
         r4 = Reserva("RES-04", clientes[1], servicios[0], horas=-4)
         r4.procesar_y_confirmar()
     except ErrorSistemaFJ as e:
-        print(f"[ERROR CONTROLADO] Op 10 (Horas negativas): {e} | Causa raiz: {e.__cause__}")
+        print(
+            f"[ERROR CONTROLADO] Op 10 (Horas negativas): {e} | Causa raiz: {e.__cause__}"
+        )
+
+    # OPERACION 11: Cancelacion valida de una reserva confirmada
+    try:
+        r1.cancelar()
+        reservas.append(r1)
+        print("[OK] Op 11:", r1.obtener_resumen())
+    except ErrorSistemaFJ as e:
+        print("[ERROR CONTROLADO] Op 11 (Cancelacion):", e)
+
+    # OPERACION 12: Descuento fuera del rango permitido
+    try:
+        r5 = Reserva("RES-05", clientes[0], servicios[0], horas=2)
+        r5.procesar_y_confirmar(descuento=150)
+    except ErrorSistemaFJ as e:
+        print(
+            f"[ERROR CONTROLADO] Op 12 (Descuento invalido): {e} | Causa raiz: {e.__cause__}"
+        )
 
     print("\n=== SIMULACION FINALIZADA EXITOSAMENTE SIN CAIDAS DEL SISTEMA ===")
     print("Verifica el archivo 'registro_eventos.log' generado en el directorio.")
