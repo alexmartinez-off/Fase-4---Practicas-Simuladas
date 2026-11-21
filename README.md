@@ -14,7 +14,7 @@ El proyecto se dividio en modulos independientes desarrollados mediante ramas de
 - `cliente.py`: Implementa la clase `Cliente` con encapsulacion de datos personales, validacion de formatos (documento, correo) y control de registros duplicados.
 - `servicios.py`: Define la clase abstracta `Servicio` y las clases especializadas `ReservaSala`, `AlquilerEquipo` y `AsesoriaEspecializada`, implementando polimorfismo en el calculo de tarifas.
 - `reserva.py`: Gestiona la vinculacion entre `Cliente` y `Servicio`, administrando los estados de la reserva y aplicando `try/except/finally` con encadenamiento de excepciones.
-- `main.py`: Modulo de integracion que ejecuta 10 operaciones de prueba (transacciones validas e intentos con datos erroneos) para demostrar la estabilidad del sistema.
+- `main.py`: Modulo de integracion que ejecuta 12 operaciones de prueba (transacciones validas e intentos con datos erroneos) para demostrar la estabilidad del sistema.
 - `registro_eventos.log`: Archivo generado automaticamente donde se almacenan los eventos del sistema y el registro de errores en tiempo de ejecucion.
 
 ## Requisitos y Ejecucion
