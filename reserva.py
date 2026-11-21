@@ -40,7 +40,6 @@ class Reserva(EntidadSistema):
         self.estado = "PENDIENTE"
         self.costo_total = 0.0
 
-
     def procesar_y_confirmar(self, descuento: float = 0.0):
         """
         Calcula el costo total invocando el polimorfismo del servicio
@@ -58,15 +57,18 @@ class Reserva(EntidadSistema):
             )
             self.estado = "CONFIRMADA"
             registrar_log(
-                "INFO",
                 f"Reserva {self.id} CONFIRMADA para {self.cliente.nombre}. "
                 f"Total: ${self.costo_total}",
+                "INFO",
             )
 
         except ErrorSistemaFJ as error_origen:
             # Encadenamiento de excepciones: captura el error original y relanza ReservaInvalidaError
             self.estado = "FALLIDA"
-            registrar_log("ERROR", f"Error procesando reserva {self.id}: {error_origen}")
+            registrar_log(
+                f"Error procesando reserva {self.id}: {error_origen}",
+                "ERROR",
+            )
             raise ReservaInvalidaError(
                 f"Fallo al procesar la reserva {self.id}"
             ) from error_origen
@@ -74,8 +76,8 @@ class Reserva(EntidadSistema):
         finally:
             # El bloque finally garantiza el registro de auditoria sin importar si hubo error o exito
             registrar_log(
-                "INFO",
                 f"Auditoria Reserva {self.id} -> Estado actual final: {self.estado}",
+                "INFO",
             )
 
     def cancelar(self):
@@ -85,7 +87,10 @@ class Reserva(EntidadSistema):
                 f"La reserva {self.id} ya se encuentra cancelada."
             )
         self.estado = "CANCELADA"
-        registrar_log("INFO", f"Reserva {self.id} CANCELADA por el usuario.")
+        registrar_log(
+            f"Reserva {self.id} CANCELADA por el usuario.",
+            "INFO",
+        )
 
     def obtener_resumen(self) -> str:
         """Implementacion del metodo abstracto heredado de EntidadSistema."""
